@@ -172,21 +172,21 @@ class JSSImporter(Processor):
             "description": "Text to apply to the package's Notes field.",
             "default": ""
         },
-         "package_priority": {
+        "package_priority": {
             "required": False,
             "description":
                 "Priority to use for deploying or uninstalling the "
                 "package. Value between 1-20. Defaults to '10'",
             "default": "10"
         },
-         "package_reboot": {
+        "package_reboot": {
             "required": False,
             "description":
                 "Computers must be restarted after installing the package "
                 "Boolean. Defaults to 'False'",
             "default": "False"
         },
-         "package_boot_volume_required": {
+        "package_boot_volume_required": {
             "required": False,
             "description":
                 "Ensure that the package is installed on the boot drive "
