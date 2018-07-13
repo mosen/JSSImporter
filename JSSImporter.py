@@ -305,6 +305,7 @@ class JSSImporter(Processor):
         self.exclusion_groups = None
         self.scripts = None
         self.policy = None
+        self.policies = []
 
     def main(self):
         """Main processor code."""
@@ -361,7 +362,9 @@ class JSSImporter(Processor):
             self.env.get("exclusion_groups"))
 
         self.scripts = self.handle_scripts()
-        self.policy = self.handle_policy()
+        self.policies = self.handle_policy()
+        if len(self.policies) > 0:
+            self.policy = self.policies[0]
         self.handle_icon()
 
         # Done with DPs, unmount them.
@@ -599,14 +602,21 @@ class JSSImporter(Processor):
         """Create or update a policy."""
         if self.env.get("policy_template"):
             template_filename = self.env.get("policy_template")
-            policy = self.update_or_create_new(
-                jss.Policy, template_filename, update_env="jss_policy_updated",
-                added_env="jss_policy_added")
+            if ',' in template_filename:
+                template_filenames = template_filename.split(',')
+            else:
+                template_filenames = [template_filename]
+
+            policies = []
+            for template in template_filenames:
+                policies.append(self.update_or_create_new(
+                    jss.Policy, template, update_env="jss_policy_updated",
+                    added_env="jss_policy_added"))
         else:
             self.output("Policy creation not desired, moving on...")
-            policy = None
+            policies = None
 
-        return policy
+        return policies
 
     def handle_icon(self):
         """Add self service icon if needed."""
@@ -1066,9 +1076,23 @@ class JSSImporter(Processor):
             priority = ElementTree.SubElement(script_element, "priority")
             priority.text = script.findtext("priority")
 
-    def add_package_to_policy(self, policy_template):
+    def add_package_to_policy(self, policy_template):  # type: (jss.jssobjects.Policy) -> None
         """Add a package to a self service policy."""
-        if self.package is not None:
+        self.output(type(policy_template))
+        no_packages_element = policy_template.find("package_configuration/nopackages")
+
+        if no_packages_element is not None:
+            self.output("The policy template contains <nopackages/>, no package will be attached to this policy")
+            # parent = no_packages_element.findall('..')
+            # print(parent)
+            # .remove(no_packages_element)
+            suppress_package = True
+        else:
+            self.output("The policy template does not contain <nopackages/>, automatic package creation will proceed")
+            print(ElementTree.tostring(policy_template))
+            suppress_package = False
+
+        if self.package is not None and suppress_package is not True:
             self.ensure_xml_structure(policy_template,
                                       "package_configuration/packages")
             action_type = self.env['policy_action_type']
