@@ -19,6 +19,11 @@ $(PKG_BUILD)/jssimporter-$(PKG_VERSION).pkg: $(objects)
 	cd $(CURDIR)/pkg && $(MUNKIPKG) jssimporter
 
 
+"$(PKG_ROOT)/Library/Application Support/JSSImporter/FileChunkIO":
+	@echo "Installing FileChunkIO into JSSImporter support directory"
+	pip install --target "$(PKG_ROOT)/Library/Application Support/JSSImporter" --ignore-installed FileChunkIO
+
+
 "$(PKG_ROOT)/Library/Application Support/JSSImporter/boto":
 	@echo "Installing boto into JSSImporter support directory"
 	#pip install --install-option="--prefix=$(PKG_ROOT)/Library/Application Support/JSSImporter/boto" --ignore-installed boto
